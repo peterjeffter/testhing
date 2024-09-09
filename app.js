@@ -1,13 +1,13 @@
 // Initialize variables
-let balance = 20000; // Default balance
+let balance = 0;
 let miningSessionActive = false;
 let claimableRoses = 0; // To track roses available to claim
 const originalButtonColor = 'rgb(121, 196, 78)';
 
+
 function formatNumber(number) {
     return new Intl.NumberFormat().format(number);
 }
-
 // Function to update the UI
 function updateUI() {
     const balanceElement = document.getElementById('balance');
@@ -28,7 +28,7 @@ function updateUI() {
         startMiningButton.disabled = false;
     } else {
         startMiningButton.innerText = 'Start Mining';
-        startMiningButton.style.backgroundColor = originalButtonColor;
+        startMiningButton.backgroundColor = originalButtonColor;
         startMiningButton.disabled = false;
     }
 }
@@ -50,7 +50,7 @@ function startMining() {
 
     // Simulate a mining session of 3 hours (set to 3 seconds for demonstration)
     setTimeout(() => {
-        claimableRoses = 500000; // Simulate mining 500,000 Xtals
+        claimableRoses = 500000; // Simulate mining 1000 roses
         miningSessionActive = false;
         updateUI();
     }, 3000); // Simulate the 3-hour delay in 3 seconds
@@ -67,13 +67,9 @@ window.Telegram.WebApp.ready();
 const user = window.Telegram.WebApp.initDataUnsafe.user;
 
 if (user) {
-    // Display the user's first and last name
-    const profileNameElement = document.getElementById('usaname');
-    profileNameElement.innerText = `${user.first_name} ${user.last_name}`;
-
-    // Update the balance in the profile section
-    const balanceElement = document.getElementById('baal');
-    balanceElement.innerHTML = `<img src="icons/crown.png" alt="">${formatNumber(balance)}`;
+    // Show authenticated user's name in the profile section or balance section
+    const profileIcon = document.getElementById('usaname');
+    profileIcon.setAttribute('title', `Logged in as ${user.first_name}`);
 
     console.log(`User ID: ${user.id}`);
     console.log(`First Name: ${user.first_name}`);
@@ -81,3 +77,4 @@ if (user) {
 } else {
     console.log('User is not authenticated via Telegram');
 }
+
