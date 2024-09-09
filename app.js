@@ -68,9 +68,9 @@
 
         if (user) {
             // Show authenticated user's name in the profile section or balance section
-            const profileIcon = document.querySelector('.profileicon');
-            profileIcon.setAttribute('title', `Logged in as ${user.first_name}`);
-
+           const profileIcon = document.getElementById('usaname');
+    profileIcon.setAttribute('title', `Logged in as ${user.first_name}`);
+          
             console.log(`User ID: ${user.id}`);
             console.log(`First Name: ${user.first_name}`);
             console.log(`Last Name: ${user.last_name}`);
