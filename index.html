@@ -38,41 +38,75 @@
     
     <!-- Main JS for wallet connection -->
     <script>
+const http = require('http');
+const https = require('https');
 
-        // Global variables for wallet connection
-let provider, signer, userAddress, userBalance;
+// Replace this with your bot token from BotFather
+const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
 
-// Function to connect using WalletConnect
-async function connectWithWalletConnect() {
-    try {
-        // Initialize WalletConnect provider
-        const walletConnectProvider = new WalletConnectProvider({
-            infuraId: "YOUR_INFURA_ID",  // Required for WalletConnect to work
-        });
+// Set the webhook URL for your bot (the public URL of your server)
+// Example: 'https://yourdomain.com/webhook'
+const WEBHOOK_URL = 'YOUR_WEBHOOK_URL';
 
-        // Enable WalletConnect session (QR code pop-up)
-        await walletConnectProvider.enable();
-
-        // Create an ethers provider using WalletConnect
-        provider = new ethers.providers.Web3Provider(walletConnectProvider);
-        signer = provider.getSigner();
-
-        // Get the connected wallet address
-        userAddress = await signer.getAddress();
-        document.getElementById("walletAddress").innerText = `Wallet Address: ${userAddress}`;
-
-        // Get the wallet balance
-        const balance = await provider.getBalance(userAddress);
-        userBalance = ethers.utils.formatEther(balance);  // Convert balance to Ether
-        document.getElementById("walletBalance").innerText = `Balance: ${userBalance} ETH`;
-    } catch (error) {
-        console.error("Error connecting with WalletConnect:", error);
-        alert("Failed to connect wallet. Please try again.");
-    }
+// Set up the webhook
+function setWebhook() {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${WEBHOOK_URL}`;
+    https.get(url, (res) => {
+        console.log('Webhook set:', res.statusCode);
+    });
 }
 
-// Add event listener for the connect button
-document.getElementById("connectWallet").addEventListener("click", connectWithWalletConnect);
+// Send a message using Telegram Bot API
+function sendMessage(chatId, text) {
+    const messageUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`;
+    https.get(messageUrl, (res) => {
+        console.log(`Message sent: ${res.statusCode}`);
+    });
+}
+
+// Create the server to handle Telegram updates
+const server = http.createServer((req, res) => {
+    if (req.method === 'POST') {
+        let body = '';
+
+        // Collect the data sent by Telegram
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+
+        req.on('end', () => {
+            // Parse the update from Telegram
+            const update = JSON.parse(body);
+
+            if (update.message) {
+                const chatId = update.message.chat.id;
+                const text = update.message.text;
+
+                // Handle /start command
+                if (text === '/start') {
+                    const firstName = update.message.from.first_name || 'there';
+                    const welcomeMessage = `Welcome, ${firstName}! 🎉\nThank you for joining our bot. How can I assist you today?`;
+                    
+                    sendMessage(chatId, welcomeMessage);
+                }
+            }
+
+            // Respond to Telegram with a 200 OK status
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end();
+        });
+    } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
+    }
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+    setWebhook();  // Call this to set the webhook when the server starts
+});
 
     </script>
 </body>
