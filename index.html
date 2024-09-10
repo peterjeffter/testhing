@@ -10,9 +10,9 @@
     <h2 class="crownbal">1,800 crowns</h2>
     <img src="icons/crown.png" alt="">
     
-    <!-- Connect wallet button -->
+    <!-- Connect wallet button for WalletConnect -->
     <button id="connectWallet" class="connectbtn">
-        <img src="icons/money.png" alt="">Connect wallet
+        <img src="icons/money.png" alt="">Connect Wallet
     </button>
 
     <!-- Display wallet address and balance -->
@@ -33,46 +33,19 @@
     <!-- Include Ethers.js for Web3 functionality -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.min.js"></script>
     
-    <!-- Include WalletConnect -->
+    <!-- Include WalletConnect library -->
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
     
     <!-- Main JS for wallet connection -->
     <script>
-        // Global variables
+
+        // Global variables for wallet connection
 let provider, signer, userAddress, userBalance;
-
-// Function to connect to MetaMask
-async function connectWallet() {
-    try {
-        // Check if MetaMask is installed
-        if (window.ethereum) {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);  // Request user to connect their wallet
-            signer = provider.getSigner();  // Get the signer (authorized wallet)
-
-            // Fetch the wallet address
-            userAddress = await signer.getAddress();
-            document.getElementById("walletAddress").innerText = `Wallet Address: ${userAddress}`;
-
-            // Fetch the wallet balance
-            const balance = await provider.getBalance(userAddress);
-            userBalance = ethers.utils.formatEther(balance);  // Convert balance to Ether
-            document.getElementById("walletBalance").innerText = `Balance: ${userBalance} ETH`;
-        } else {
-            alert("MetaMask is not installed! Please install it to connect your wallet.");
-        }
-    } catch (error) {
-        console.error("Error connecting wallet:", error);
-    }
-}
-
-// Event listener for "Connect wallet" button
-document.getElementById("connectWallet").addEventListener("click", connectWallet);
-
 
 // Function to connect using WalletConnect
 async function connectWithWalletConnect() {
     try {
+        // Initialize WalletConnect provider
         const walletConnectProvider = new WalletConnectProvider({
             infuraId: "YOUR_INFURA_ID",  // Required for WalletConnect to work
         });
@@ -80,25 +53,26 @@ async function connectWithWalletConnect() {
         // Enable WalletConnect session (QR code pop-up)
         await walletConnectProvider.enable();
 
-        // Create a new provider from WalletConnect
-        const wcProvider = new ethers.providers.Web3Provider(walletConnectProvider);
-        signer = wcProvider.getSigner();
+        // Create an ethers provider using WalletConnect
+        provider = new ethers.providers.Web3Provider(walletConnectProvider);
+        signer = provider.getSigner();
 
-        // Get the connected account
-        const account = await signer.getAddress();
-        document.getElementById("walletAddress").innerText = `Wallet Address: ${account}`;
+        // Get the connected wallet address
+        userAddress = await signer.getAddress();
+        document.getElementById("walletAddress").innerText = `Wallet Address: ${userAddress}`;
 
         // Get the wallet balance
-        const balance = await wcProvider.getBalance(account);
-        document.getElementById("walletBalance").innerText = `Balance: ${ethers.utils.formatEther(balance)} ETH`;
+        const balance = await provider.getBalance(userAddress);
+        userBalance = ethers.utils.formatEther(balance);  // Convert balance to Ether
+        document.getElementById("walletBalance").innerText = `Balance: ${userBalance} ETH`;
     } catch (error) {
         console.error("Error connecting with WalletConnect:", error);
+        alert("Failed to connect wallet. Please try again.");
     }
 }
 
-// You can add a new button for WalletConnect and call the function
-// <button id="walletConnectBtn">Connect with WalletConnect</button>
-// document.getElementById("walletConnectBtn").addEventListener("click", connectWithWalletConnect);
+// Add event listener for the connect button
+document.getElementById("connectWallet").addEventListener("click", connectWithWalletConnect);
 
     </script>
 </body>
