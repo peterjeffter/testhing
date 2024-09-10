@@ -125,7 +125,7 @@
         if (user) {
             // Show authenticated user's name in the profile section or balance section
             const profileIcon = document.getElementById('usaname');
-            profileIcon.innerHTML = `${user.first_name}`;
+            profileIcon.innerHTML = `${user.first_name} ${user.last_name}`;
 
             console.log(`User ID: ${user.id}`);
             console.log(`First Name: ${user.first_name}`);
